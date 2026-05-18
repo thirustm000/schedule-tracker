@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Schedule">
 <meta name="theme-color" content="#0f0f0f">
-<meta name="description" content="Personal schedule tracker — works offline on any device">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>Schedule Tracker</title>
@@ -15,46 +14,39 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --surface2: #222222;
-  --border: #2e2e2e;
-  --text: #f0f0f0;
-  --muted: #707070;
-  --hint: #444;
-  --accent: #c8f57c;
-  --accent-dim: rgba(200,245,124,0.12);
-  --accent-text: #0f0f0f;
-  --red: #ff5c5c;
-  --red-dim: rgba(255,92,92,0.1);
-  --blue: #60a5fa;
-  --blue-dim: rgba(96,165,250,0.1);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167,139,250,0.1);
-  --amber: #fbbf24;
-  --radius: 12px;
-  --radius-sm: 8px;
+  --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222;
+  --border: #2e2e2e; --text: #f0f0f0; --muted: #707070; --hint: #444;
+  --accent: #c8f57c; --accent-dim: rgba(200,245,124,0.12); --accent-text: #0f0f0f;
+  --red: #ff5c5c; --red-dim: rgba(255,92,92,0.1);
+  --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.1);
+  --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.1);
+  --amber: #fbbf24; --radius: 12px; --radius-sm: 8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; overscroll-behavior: none; }
 .app { max-width: 520px; margin: 0 auto; padding: 0 0 120px; }
 
-/* Header */
 .header { padding: 52px 20px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
-.header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
 .header-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
 .header-date { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1.1; }
 .stats-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .stat-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 5px 12px; font-size: 12px; font-family: 'DM Mono', monospace; }
 .stat-chip span { color: var(--accent); font-weight: 500; margin-right: 4px; }
 
-/* Tabs */
+.sync-bar { display: flex; align-items: center; gap: 8px; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--hint); flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+.sync-dot.ok { background: var(--accent); }
+.sync-dot.error { background: var(--red); }
+.sync-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
 .tabs { display: flex; gap: 4px; padding: 12px 20px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
 .tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
 
-/* Add form */
 .add-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
 .add-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); font-size: 14px; background: none; border: none; font-family: inherit; padding: 0; }
 .add-toggle .plus { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; transition: transform 0.2s; }
@@ -73,23 +65,22 @@ input[type="text"]:focus, input[type="datetime-local"]:focus, select:focus { bor
 input[type="text"]::placeholder { color: var(--hint); }
 select option { background: var(--surface2); }
 input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.4); cursor: pointer; }
+.submit-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 11px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.15s; width: 100%; }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.submit-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 11px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.15s, transform 0.1s; width: 100%; }
-.submit-btn:active { opacity: 0.85; transform: scale(0.98); }
-
-/* List */
 .list { padding: 12px 20px 0; }
 .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
 .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
 .empty p { font-size: 14px; }
+.loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px 20px; color: var(--muted); font-size: 14px; }
+.spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* Items */
-.item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; transition: opacity 0.2s; animation: slideIn 0.2s ease; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.2s ease; }
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
 .item.done { opacity: 0.45; }
 .item.urgent { border-left: 2px solid var(--red); }
-.check-wrap { padding-top: 1px; flex-shrink: 0; }
-.check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; margin-top: 1px; }
 .check.done { background: var(--accent); border-color: var(--accent); }
 .check svg { display: none; }
 .check.done svg { display: block; }
@@ -110,21 +101,24 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 .del-btn:hover { color: var(--red); }
 .day-sep { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hint); padding: 16px 0 6px; }
 
-/* Install banners */
-.install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; z-index: 20; }
-.install-banner.hidden { display: none; }
-.install-text { flex: 1; font-size: 13px; color: var(--muted); }
-.install-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
-.install-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; white-space: nowrap; }
-.dismiss-btn { background: none; border: none; color: var(--hint); font-size: 22px; cursor: pointer; padding: 0; line-height: 1; }
-.ios-hint { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 20px 20px 32px; z-index: 20; animation: slideUp 0.25s ease; }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; font-size: 13px; color: var(--text); z-index: 100; transition: transform 0.3s ease; white-space: nowrap; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { border-color: var(--red); color: var(--red); }
+
+.ios-hint { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 20px 20px 36px; z-index: 20; animation: slideUp 0.25s ease; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 .ios-hint.hidden { display: none; }
 .ios-hint-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .ios-hint h3 { font-size: 15px; font-weight: 600; }
 .ios-hint p { font-size: 13px; color: var(--muted); line-height: 1.7; }
 .ios-hint p strong { color: var(--text); }
 .close-ios { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
+.install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; z-index: 20; }
+.install-banner.hidden { display: none; }
+.install-text { flex: 1; font-size: 13px; color: var(--muted); }
+.install-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
+.install-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.dismiss-btn { background: none; border: none; color: var(--hint); font-size: 22px; cursor: pointer; padding: 0; line-height: 1; }
 </style>
 </head>
 <body>
@@ -133,13 +127,17 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
     <div class="header-top">
       <div>
         <div class="header-title">Schedule</div>
-        <div class="header-date" id="hdr-date">Monday</div>
+        <div class="header-date" id="hdr-date"></div>
       </div>
       <div class="stats-row">
         <div class="stat-chip"><span id="s-today">0</span>today</div>
         <div class="stat-chip"><span id="s-done">0</span>done</div>
         <div class="stat-chip"><span id="s-total">0</span>total</div>
       </div>
+    </div>
+    <div class="sync-bar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span class="sync-label" id="sync-label">Connecting…</span>
     </div>
   </div>
 
@@ -152,8 +150,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
 
   <div class="add-section">
     <button class="add-toggle" id="toggle-btn" onclick="toggleForm()">
-      <span class="plus">+</span>
-      Add event
+      <span class="plus">+</span> Add event
     </button>
     <div class="form-body" id="form-body">
       <input type="text" id="inp-title" placeholder="Event title…" maxlength="80" />
@@ -170,225 +167,253 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert
           <option value="urgent">🔴 Urgent</option>
         </select>
       </div>
-      <button class="submit-btn" onclick="addItem()">Add to schedule</button>
+      <button class="submit-btn" id="submit-btn" onclick="addItem()">Add to schedule</button>
     </div>
   </div>
 
-  <div class="list" id="list"></div>
+  <div class="list" id="list">
+    <div class="loading"><div class="spinner"></div> Loading your schedule…</div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div class="ios-hint hidden" id="ios-hint">
   <div class="ios-hint-top">
     <h3>📲 Add to Home Screen</h3>
     <button class="close-ios" onclick="document.getElementById('ios-hint').classList.add('hidden')">×</button>
   </div>
-  <p>In Safari, tap the <strong>Share</strong> button (⬆) at the bottom, then tap <strong>"Add to Home Screen"</strong>. The app will work offline like a native app.</p>
+  <p>In Safari, tap the <strong>Share button (⬆)</strong> at the bottom, then tap <strong>"Add to Home Screen"</strong>.</p>
 </div>
 
 <div class="install-banner hidden" id="install-banner">
-  <div class="install-text">
-    <strong>Install app</strong>
-    Works offline on this device
-  </div>
+  <div class="install-text"><strong>Install app</strong>Works offline on this device</div>
   <button class="install-btn" id="install-btn">Install</button>
-  <button class="dismiss-btn" onclick="dismissInstall()">×</button>
+  <button class="dismiss-btn" onclick="document.getElementById('install-banner').classList.add('hidden')">×</button>
 </div>
 
 <script>
-// ── Data ────────────────────────────────────────────────────────────────────
-let items = [];
-let activeTab = 'all';
-let deferredPrompt = null;
+const API = 'https://script.google.com/macros/s/AKfycbyb8USqH5nvZm8mnXYzH8ZVQXiaE-jgNh4UBC22pi2dNsoqmeqOKdh0jTPa7M8RXhYDMA/exec';
+const SECRET = 'mango-jack-banana';
+const CACHE_KEY = 'sched_cache_v1';
 
-const KEY = 'sched_v2';
+let items = [], activeTab = 'all', deferredPrompt = null;
 
-function load() {
-  try { items = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { items = []; }
-}
-function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(items)); } catch(e) {}
+// ── Sync status ───────────────────────────────────────────────────────────────
+function setSync(state, msg) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + state;
+  document.getElementById('sync-label').textContent = msg;
 }
 
-// ── UI ──────────────────────────────────────────────────────────────────────
-function setTab(t, el) {
-  activeTab = t;
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  render();
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, isErr) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = 'toast', 3000);
 }
 
-function toggleForm() {
-  const btn = document.getElementById('toggle-btn');
-  const body = document.getElementById('form-body');
-  const open = body.classList.toggle('open');
-  btn.classList.toggle('open', open);
-  if (open) setTimeout(() => document.getElementById('inp-title').focus(), 50);
+// ── API ───────────────────────────────────────────────────────────────────────
+async function apiPost(body) {
+  const r = await fetch(API, { method: 'POST', body: JSON.stringify({ ...body, key: SECRET }) });
+  return r.json();
 }
 
-function addItem() {
+async function loadItems() {
+  setSync('syncing', 'Syncing…');
+  try {
+    const r = await fetch(API + '?key=' + SECRET);
+    items = await r.json();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
+    setSync('ok', 'Synced · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));
+    render();
+  } catch(e) {
+    try {
+      const c = localStorage.getItem(CACHE_KEY);
+      if (c) { items = JSON.parse(c); render(); }
+    } catch(e2) {}
+    setSync('error', 'Offline — cached data');
+    toast('Cannot reach server. Showing cached data.', true);
+  }
+}
+
+async function addItem() {
   const title = document.getElementById('inp-title').value.trim();
   if (!title) { document.getElementById('inp-title').focus(); return; }
-  items.push({
-    id: Date.now(),
-    title,
+  const item = {
+    id: Date.now(), title,
     dt: document.getElementById('inp-dt').value,
     cat: document.getElementById('inp-cat').value,
     pri: document.getElementById('inp-pri').value,
-    done: false,
-    created: new Date().toISOString()
-  });
-  save();
+    done: false, created: new Date().toISOString()
+  };
+  items.unshift(item); render();
   document.getElementById('inp-title').value = '';
   document.getElementById('inp-pri').value = 'normal';
   setDefaultDt();
-  render();
-  document.getElementById('inp-title').focus();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; setSync('syncing', 'Saving…');
+  try {
+    await apiPost({ action: 'add', item });
+    setSync('ok', 'Saved'); toast('Event added ✓');
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
+  } catch(e) {
+    items = items.filter(x => x.id !== item.id); render();
+    setSync('error', 'Save failed'); toast('Failed to save — check connection', true);
+  } finally { btn.disabled = false; }
 }
 
-function toggleDone(id) {
-  const it = items.find(x => x.id === id);
-  if (it) { it.done = !it.done; save(); render(); }
+async function toggleDone(id) {
+  const it = items.find(x => String(x.id) === String(id));
+  if (!it) return;
+  it.done = !it.done; render();
+  setSync('syncing', 'Saving…');
+  try {
+    await apiPost({ action: 'toggle', item: { id, done: it.done } });
+    setSync('ok', 'Saved');
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
+  } catch(e) {
+    it.done = !it.done; render();
+    setSync('error', 'Update failed'); toast('Failed to update', true);
+  }
 }
 
-function del(id) {
+async function del(id) {
   if (!confirm('Delete this event?')) return;
-  items = items.filter(x => x.id !== id);
-  save(); render();
+  const backup = items.slice();
+  items = items.filter(x => String(x.id) !== String(id)); render();
+  setSync('syncing', 'Deleting…');
+  try {
+    await apiPost({ action: 'delete', item: { id } });
+    setSync('ok', 'Deleted'); toast('Event deleted');
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
+  } catch(e) {
+    items = backup; render();
+    setSync('error', 'Delete failed'); toast('Failed to delete', true);
+  }
 }
 
-// ── Render ──────────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function fmtDate(iso) {
   if (!iso) return null;
   const d = new Date(iso), now = new Date();
-  const todayStr = now.toDateString();
-  const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1).toDateString();
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const prefix = d.toDateString() === todayStr ? 'Today' : d.toDateString() === tomorrowStr ? 'Tomorrow' : `${DAYS[d.getDay()]}, ${MONS[d.getMonth()]} ${d.getDate()}`;
-  return `${prefix} · ${time}`;
+  const tom = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1).toDateString();
+  const t = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const pre = d.toDateString()===now.toDateString() ? 'Today' : d.toDateString()===tom ? 'Tomorrow' : `${DAYS[d.getDay()]}, ${MONS[d.getMonth()]} ${d.getDate()}`;
+  return `${pre} · ${t}`;
 }
-
-function timeStatus(iso) {
+function timeSt(iso) {
   if (!iso) return '';
   const diff = new Date(iso) - Date.now();
   if (diff < 0 && diff > -86400000) return 'overdue';
   if (diff >= 0 && diff < 3600000) return 'soon';
   return '';
 }
-
 function isToday(iso) { return iso && new Date(iso).toDateString() === new Date().toDateString(); }
 function isUpcoming(iso) { return iso && new Date(iso) > new Date(); }
-
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function render() {
   const now = new Date();
   document.getElementById('hdr-date').textContent = `${DAYS[now.getDay()]}, ${MONS[now.getMonth()]} ${now.getDate()}`;
   document.getElementById('s-today').textContent = items.filter(x => isToday(x.dt)).length;
-  document.getElementById('s-done').textContent = items.filter(x => x.done).length;
+  document.getElementById('s-done').textContent = items.filter(x => x.done === true || x.done === 'TRUE').length;
   document.getElementById('s-total').textContent = items.length;
 
   let vis = items.slice();
   if (activeTab === 'today') vis = vis.filter(x => isToday(x.dt));
-  else if (activeTab === 'upcoming') vis = vis.filter(x => !x.done && isUpcoming(x.dt));
-  else if (activeTab === 'done') vis = vis.filter(x => x.done);
+  else if (activeTab === 'upcoming') vis = vis.filter(x => !(x.done===true||x.done==='TRUE') && isUpcoming(x.dt));
+  else if (activeTab === 'done') vis = vis.filter(x => x.done===true||x.done==='TRUE');
 
-  vis.sort((a, b) => {
-    if (a.done !== b.done) return a.done ? 1 : -1;
-    if (!a.dt && !b.dt) return new Date(b.created) - new Date(a.created);
+  vis.sort((a,b) => {
+    const ad = a.done===true||a.done==='TRUE', bd = b.done===true||b.done==='TRUE';
+    if (ad !== bd) return ad ? 1 : -1;
+    if (!a.dt && !b.dt) return new Date(b.created||0)-new Date(a.created||0);
     if (!a.dt) return 1; if (!b.dt) return -1;
-    return new Date(a.dt) - new Date(b.dt);
+    return new Date(a.dt)-new Date(b.dt);
   });
 
   const list = document.getElementById('list');
   if (!vis.length) {
-    const msgs = { all: 'No events yet — add one above', today: 'Nothing scheduled today', upcoming: 'Nothing upcoming', done: 'Nothing completed yet' };
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>${msgs[activeTab]}</p></div>`;
+    const m = {all:'No events yet — add one above',today:'Nothing scheduled today',upcoming:'Nothing upcoming',done:'Nothing completed yet'};
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>${m[activeTab]}</p></div>`;
     return;
   }
 
-  let html = '', lastDay = null;
+  let html='', lastDay=null;
   vis.forEach(it => {
+    const done = it.done===true||it.done==='TRUE';
     const dayKey = it.dt ? new Date(it.dt).toDateString() : '__nodate__';
     if (dayKey !== lastDay && activeTab !== 'today') {
       lastDay = dayKey;
-      const label = it.dt ? (isToday(it.dt) ? 'Today' : (fmtDate(it.dt)||'').split(' · ')[0]) : 'No date';
+      const label = it.dt ? (isToday(it.dt)?'Today':(fmtDate(it.dt)||'').split(' · ')[0]) : 'No date';
       html += `<div class="day-sep">${label}</div>`;
     }
-    const ts = timeStatus(it.dt), timeLabel = fmtDate(it.dt);
+    const ts = timeSt(it.dt), tl = fmtDate(it.dt);
     html += `
-      <div class="item${it.done?' done':''}${it.pri==='urgent'?' urgent':''}">
-        <div class="check-wrap">
-          <div class="check${it.done?' done':''}" onclick="toggleDone(${it.id})" role="checkbox" aria-checked="${it.done}" aria-label="Toggle done">
-            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round"/></svg>
-          </div>
+      <div class="item${done?' done':''}${it.pri==='urgent'?' urgent':''}">
+        <div class="check${done?' done':''}" onclick="toggleDone('${it.id}')" role="checkbox" aria-checked="${done}">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round"/></svg>
         </div>
         <div class="item-content">
           <div class="item-title">${esc(it.title)}</div>
           <div class="item-meta">
-            ${timeLabel ? `<span class="item-time ${ts}">${timeLabel}</span>` : ''}
-            <span class="badge badge-${it.cat}">${it.cat}</span>
-            ${it.pri==='urgent' ? '<span class="badge badge-urgent">urgent</span>' : ''}
+            ${tl?`<span class="item-time ${ts}">${tl}</span>`:''}
+            <span class="badge badge-${it.cat||'other'}">${it.cat||'other'}</span>
+            ${it.pri==='urgent'?'<span class="badge badge-urgent">urgent</span>':''}
           </div>
         </div>
-        <button class="del-btn" onclick="del(${it.id})" aria-label="Delete">×</button>
+        <button class="del-btn" onclick="del('${it.id}')" aria-label="Delete">×</button>
       </div>`;
   });
   list.innerHTML = html;
 }
 
-// ── Enter key ────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement.id === 'inp-title') addItem();
-});
-
-function setDefaultDt() {
-  const n = new Date();
-  n.setMinutes(n.getMinutes() + 30 - (n.getMinutes() % 30));
-  n.setSeconds(0, 0);
-  document.getElementById('inp-dt').value = new Date(n - n.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+// ── Misc ──────────────────────────────────────────────────────────────────────
+function setTab(t,el) {
+  activeTab=t;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active'); render();
 }
-setDefaultDt();
+function toggleForm() {
+  const btn=document.getElementById('toggle-btn'), body=document.getElementById('form-body');
+  const open=body.classList.toggle('open'); btn.classList.toggle('open',open);
+  if(open) setTimeout(()=>document.getElementById('inp-title').focus(),50);
+}
+function setDefaultDt() {
+  const n=new Date(); n.setMinutes(n.getMinutes()+30-(n.getMinutes()%30)); n.setSeconds(0,0);
+  document.getElementById('inp-dt').value=new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter'&&document.activeElement.id==='inp-title') addItem(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden) loadItems(); });
 
-// ── PWA install prompts ───────────────────────────────────────────────────────
+// ── PWA ───────────────────────────────────────────────────────────────────────
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-
 if (!isStandalone && isIOS && !sessionStorage.getItem('ios_shown')) {
-  setTimeout(() => {
-    document.getElementById('ios-hint').classList.remove('hidden');
-    sessionStorage.setItem('ios_shown', '1');
-  }, 2500);
+  setTimeout(() => { document.getElementById('ios-hint').classList.remove('hidden'); sessionStorage.setItem('ios_shown','1'); }, 2500);
 }
-
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!isStandalone) document.getElementById('install-banner').classList.remove('hidden');
+  e.preventDefault(); deferredPrompt=e;
+  if(!isStandalone) document.getElementById('install-banner').classList.remove('hidden');
 });
-
 document.getElementById('install-btn').addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') document.getElementById('install-banner').classList.add('hidden');
-  deferredPrompt = null;
+  if(!deferredPrompt) return; deferredPrompt.prompt();
+  const {outcome}=await deferredPrompt.userChoice;
+  if(outcome==='accepted') document.getElementById('install-banner').classList.add('hidden');
+  deferredPrompt=null;
 });
-
-function dismissInstall() { document.getElementById('install-banner').classList.add('hidden'); }
-
-// ── Service Worker ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW failed:', err));
-  });
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-load();
-render();
+setDefaultDt();
+loadItems();
 </script>
 </body>
 </html>
