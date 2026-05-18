@@ -1,624 +1,560 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Schedule">
-<meta name="theme-color" content="#0f0f0f">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Schedule Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0f0f0f"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Schedule"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222;
-  --border: #2e2e2e; --text: #f0f0f0; --muted: #707070; --hint: #3a3a3a;
-  --accent: #c8f57c; --accent-dim: rgba(200,245,124,0.12); --accent-text: #0f0f0f;
-  --red: #ff5c5c; --red-dim: rgba(255,92,92,0.1);
-  --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.1);
-  --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.1);
-  --amber: #fbbf24; --amber-dim: rgba(251,191,36,0.1);
-  --radius: 12px; --radius-sm: 8px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;
+  --accent:#c8f57c;--accent-dim:#a0c45a;--text:#e8e8e8;--muted:#888;
+  --red:#ff5555;--amber:#ffb347;--green:#c8f57c;
+  --radius:12px;--radius-sm:8px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; overscroll-behavior: none; }
-.app { max-width: 540px; margin: 0 auto; padding: 0 0 100px; }
-
-/* ── Header ── */
-.header { padding: 52px 20px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
-.header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
-.header-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; margin-bottom: 3px; }
-.header-date { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.15; }
-.stats-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.stat-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 4px 11px; font-size: 11px; font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 4px; }
-.stat-chip span { color: var(--accent); font-weight: 500; }
-.sync-bar { display: flex; align-items: center; gap: 7px; }
-.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hint); flex-shrink: 0; transition: background 0.3s; }
-.sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
-.sync-dot.ok { background: var(--accent); }
-.sync-dot.error { background: var(--red); }
-.sync-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.35} }
-
-/* ── Tabs ── */
-.tabs { display: flex; gap: 4px; padding: 10px 20px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); }
-.tabs::-webkit-scrollbar { display: none; }
-.tab { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
-.tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
-
-/* ── Add form ── */
-.add-section { padding: 14px 20px; border-bottom: 1px solid var(--border); }
-.add-toggle { display: flex; align-items: center; gap: 9px; cursor: pointer; color: var(--muted); font-size: 14px; background: none; border: none; font-family: inherit; padding: 0; width: 100%; }
-.add-toggle .plus-icon { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; transition: transform 0.2s; flex-shrink: 0; }
-.add-toggle.open .plus-icon { transform: rotate(45deg); }
-.add-toggle-label { flex: 1; text-align: left; }
-
-.form-body { display: none; flex-direction: column; gap: 10px; margin-top: 14px; }
-.form-body.open { display: flex; }
-.form-row { display: flex; gap: 8px; }
-.form-row > * { flex: 1; min-width: 0; }
-
-/* date toggle */
-.dt-toggle-row { display: flex; align-items: center; gap: 10px; }
-.dt-toggle-btn { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
-.dt-toggle-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
-.dt-toggle-btn .dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor; flex-shrink: 0; }
-.dt-toggle-btn.active .dot { background: currentColor; }
-.dt-field { flex: 1; }
-
-input[type="text"], input[type="datetime-local"], select {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 12px;
-  width: 100%; outline: none; -webkit-appearance: none; appearance: none; transition: border-color 0.15s;
-}
-input[type="text"]:focus, input[type="datetime-local"]:focus, select:focus { border-color: var(--accent); }
-input[type="text"]::placeholder { color: var(--hint); }
-select option { background: var(--surface2); }
-input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.4); cursor: pointer; }
-input[type="datetime-local"]:disabled { opacity: 0.3; pointer-events: none; }
-
-.submit-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.15s; width: 100%; }
-.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ── List view ── */
-.list { padding: 10px 20px 0; }
-.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-.empty-icon { font-size: 38px; margin-bottom: 12px; opacity: 0.35; }
-.empty p { font-size: 14px; }
-.loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px 20px; color: var(--muted); font-size: 14px; }
-.spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 14px; margin-bottom: 7px; display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.18s ease; }
-@keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-.item.done { opacity: 0.4; }
-.item.urgent { border-left: 2px solid var(--red); }
-.check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; margin-top: 2px; }
-.check.done { background: var(--accent); border-color: var(--accent); }
-.check svg { display: none; }
-.check.done svg { display: block; }
-.item-content { flex: 1; min-width: 0; }
-.item-title { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.3; margin-bottom: 5px; word-break: break-word; }
-.item.done .item-title { text-decoration: line-through; color: var(--muted); }
-.item-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.item-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-.item-time.overdue { color: var(--red); }
-.item-time.soon { color: var(--amber); }
-.no-date-tag { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--hint); background: var(--surface2); padding: 2px 7px; border-radius: 99px; }
-.badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
-.badge-work { background: var(--blue-dim); color: var(--blue); }
-.badge-personal { background: var(--purple-dim); color: var(--purple); }
-.badge-health { background: var(--accent-dim); color: var(--accent); }
-.badge-other { background: #2a2a2a; color: var(--muted); }
-.badge-urgent { background: var(--red-dim); color: var(--red); }
-.del-btn { background: none; border: none; cursor: pointer; color: var(--hint); font-size: 20px; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.15s; }
-.del-btn:hover { color: var(--red); }
-.day-sep { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hint); padding: 14px 0 5px; }
-
-/* ── Calendar view ── */
-.calendar { padding: 12px 20px 0; display: none; }
-.calendar.active { display: block; }
-.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.cal-nav-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); width: 34px; height: 34px; color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s; }
-.cal-nav-btn:hover { border-color: var(--accent); }
-.cal-month { font-size: 15px; font-weight: 600; }
-.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 16px; }
-.cal-dow { text-align: center; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); padding: 4px 0 8px; text-transform: uppercase; }
-.cal-day { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; border: 1px solid transparent; transition: all 0.12s; font-size: 13px; color: var(--muted); gap: 3px; }
-.cal-day:hover { background: var(--surface); }
-.cal-day.has-event { color: var(--text); }
-.cal-day.today { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-.cal-day.selected { background: var(--accent); color: var(--accent-text) !important; font-weight: 600; border-color: var(--accent); }
-.cal-day.other-month { opacity: 0.25; }
-.cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; max-width: 28px; }
-.cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-.cal-dot.done-dot { background: var(--muted); }
-.cal-day.selected .cal-dot { background: var(--accent-text); }
-
-.cal-day-events { }
-.cal-day-header { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
-.cal-event { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
-.cal-event.done { opacity: 0.45; }
-.cal-event.urgent { border-left: 2px solid var(--red); }
-.cal-event-title { flex: 1; font-size: 14px; font-weight: 500; }
-.cal-event.done .cal-event-title { text-decoration: line-through; color: var(--muted); }
-.cal-event-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-
-/* ── Toast ── */
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; font-size: 13px; color: var(--text); z-index: 100; transition: transform 0.3s ease; white-space: nowrap; pointer-events: none; }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.err { border-color: var(--red); color: var(--red); }
-
-/* ── iOS / Install ── */
-.ios-hint { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 20px 20px 36px; z-index: 20; animation: slideUp 0.25s ease; }
-@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-.ios-hint.hidden { display: none; }
-.ios-hint-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.ios-hint h3 { font-size: 15px; font-weight: 600; }
-.ios-hint p { font-size: 13px; color: var(--muted); line-height: 1.7; }
-.ios-hint p strong { color: var(--text); }
-.close-ios { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
-.install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; z-index: 20; }
-.install-banner.hidden { display: none; }
-.install-text { flex: 1; font-size: 13px; color: var(--muted); }
-.install-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
-.install-btn { background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm); padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
-.dismiss-btn { background: none; border: none; color: var(--hint); font-size: 22px; cursor: pointer; padding: 0; line-height: 1; }
+html{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px}
+body{min-height:100vh;max-width:540px;margin:0 auto;padding-bottom:80px}
+/* header */
+#header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px 0}
+#header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#hdate{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace}
+#stats{display:flex;gap:8px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-family:'DM Mono',monospace;color:var(--muted)}
+.chip span{color:var(--accent);font-weight:600}
+/* sync bar */
+#sync-bar{display:flex;align-items:center;gap:6px;padding:4px 0 10px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+#sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .3s}
+#sync-bar.syncing #sync-dot{background:var(--amber);animation:pulse 1s infinite}
+#sync-bar.ok #sync-dot{background:var(--accent)}
+#sync-bar.error #sync-dot{background:var(--red)}
+/* tabs */
+#tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding-bottom:1px}
+#tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:7px 14px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:color .2s}
+.tab.active{color:var(--accent);border-bottom:2px solid var(--accent)}
+/* form */
+#form-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+#form-row{display:flex;gap:8px;margin-bottom:10px}
+#title-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;outline:none;transition:border-color .2s}
+#title-input:focus{border-color:var(--accent)}
+#add-btn{background:var(--accent);color:#0f0f0f;border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+#add-btn:active{opacity:.8}
+#form-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#dt-toggle{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:12px;padding:5px 10px;cursor:pointer;font-family:'DM Mono',monospace}
+#dt-toggle.active{border-color:var(--accent);color:var(--accent)}
+#dt-input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;padding:5px 10px;outline:none;font-family:'DM Mono',monospace;display:none}
+#dt-input.show{display:block}
+#dt-input:focus{border-color:var(--accent)}
+select.meta-select{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:5px 10px;outline:none;cursor:pointer;font-family:'DM Mono',monospace}
+select.meta-select:focus{border-color:var(--accent)}
+/* list */
+#list-section{padding:0 16px}
+.day-sep{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:14px 0 6px;letter-spacing:.05em;text-transform:uppercase}
+/* item */
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;animation:slideIn .2s ease;transition:opacity .3s}
+.item.urgent{border-left:3px solid var(--red)}
+.item.done-item{opacity:.45}
+.item.done-item .item-title{text-decoration:line-through}
+.item-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s}
+.item-check.checked{background:var(--accent);border-color:var(--accent)}
+.item-check.checked::after{content:'✓';font-size:10px;color:#0f0f0f;font-weight:700}
+.item-body{flex:1;min-width:0}
+.item-title{font-size:14px;font-weight:500;margin-bottom:5px;word-break:break-word}
+.item-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tag{font-family:'DM Mono',monospace;font-size:11px;padding:2px 7px;border-radius:20px;border:1px solid var(--border)}
+.tag.cat{background:var(--surface2);color:var(--muted)}
+.tag.urgent-tag{background:rgba(255,85,85,.15);border-color:rgba(255,85,85,.4);color:var(--red)}
+.tag.nodate{background:var(--surface2);color:var(--muted)}
+.tag.dt{background:var(--surface2)}
+.tag.dt.overdue{color:var(--red);border-color:rgba(255,85,85,.4)}
+.tag.dt.soon{color:var(--amber);border-color:rgba(255,179,71,.4)}
+.tag.dt.ok{color:var(--accent)}
+.item-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:color .2s}
+.item-del:hover{color:var(--red)}
+/* empty */
+.empty{text-align:center;padding:48px 0;color:var(--muted);font-size:14px}
+.empty-icon{font-size:36px;margin-bottom:10px}
+/* calendar */
+#cal-section{padding:14px 16px;display:none}
+#cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+#cal-label{font-size:15px;font-weight:600}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:5px 12px;cursor:pointer;font-size:14px}
+#cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.cal-dow{text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);padding:4px 0}
+.cal-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 4px;text-align:center;cursor:pointer;min-height:46px;transition:border-color .2s;position:relative}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.today{border-color:var(--accent)}
+.cal-day.empty-day{background:transparent;border-color:transparent;cursor:default}
+.cal-day.selected{background:rgba(200,245,124,.1);border-color:var(--accent)}
+.cal-day-num{font-size:13px;font-weight:500}
+.cal-dots{display:flex;justify-content:center;gap:3px;margin-top:4px;flex-wrap:wrap}
+.cal-dot{width:5px;height:5px;border-radius:50%}
+.cal-dot.pending{background:var(--accent)}
+.cal-dot.done{background:var(--muted)}
+#cal-day-events{border-top:1px solid var(--border);padding-top:14px}
+#cal-day-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace}
+/* iOS banner */
+#ios-banner{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:12px 16px;padding:12px 14px;font-size:13px;align-items:center;gap:10px}
+#ios-banner-text{flex:1;color:var(--muted)}
+#ios-banner-text strong{color:var(--text)}
+#ios-banner-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:2px}
+/* install btn */
+#install-btn{display:none;position:fixed;bottom:20px;right:16px;background:var(--accent);color:#0f0f0f;border:none;border-radius:var(--radius);padding:10px 18px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 4px 20px rgba(200,245,124,.3);z-index:200}
+/* toast */
+#toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:calc(100% - 32px);max-width:380px}
+.toast{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;animation:slideIn .25s ease;pointer-events:auto;display:flex;align-items:center;gap:8px}
+.toast.err{border-color:rgba(255,85,85,.5);color:var(--red)}
+.toast.ok{border-color:rgba(200,245,124,.4);color:var(--accent)}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <div>
-        <div class="header-label">Schedule</div>
-        <div class="header-date" id="hdr-date"></div>
-      </div>
-      <div class="stats-row">
-        <div class="stat-chip"><span id="s-today">0</span> today</div>
-        <div class="stat-chip"><span id="s-done">0</span> done</div>
-        <div class="stat-chip"><span id="s-total">0</span> total</div>
-      </div>
-    </div>
-    <div class="sync-bar">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span class="sync-label" id="sync-label">Connecting…</span>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="setTab('all',this)">All</button>
-    <button class="tab" onclick="setTab('today',this)">Today</button>
-    <button class="tab" onclick="setTab('upcoming',this)">Upcoming</button>
-    <button class="tab" onclick="setTab('done',this)">Done</button>
-    <button class="tab" onclick="setTab('calendar',this)">📅 Calendar</button>
-  </div>
-
-  <!-- Add form -->
-  <div class="add-section">
-    <button class="add-toggle" id="toggle-btn" onclick="toggleForm()">
-      <span class="plus-icon">+</span>
-      <span class="add-toggle-label">Add event</span>
-    </button>
-    <div class="form-body" id="form-body">
-      <input type="text" id="inp-title" placeholder="What do you need to do?" maxlength="80" />
-
-      <!-- Date toggle -->
-      <div class="dt-toggle-row">
-        <button class="dt-toggle-btn active" id="dt-toggle" onclick="toggleDt()">
-          <span class="dot"></span> With date & time
-        </button>
-        <input type="datetime-local" id="inp-dt" class="dt-field" />
-      </div>
-
-      <div class="form-row">
-        <select id="inp-cat">
-          <option value="work">💼 Work</option>
-          <option value="personal">🏠 Personal</option>
-          <option value="health">🏃 Health</option>
-          <option value="other">📌 Other</option>
-        </select>
-        <select id="inp-pri">
-          <option value="normal">Normal</option>
-          <option value="urgent">🔴 Urgent</option>
-        </select>
-      </div>
-      <button class="submit-btn" id="submit-btn" onclick="addItem()">Add to schedule</button>
-    </div>
-  </div>
-
-  <!-- List -->
-  <div class="list" id="list">
-    <div class="loading"><div class="spinner"></div> Loading your schedule…</div>
-  </div>
-
-  <!-- Calendar -->
-  <div class="calendar" id="calendar">
-    <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div class="cal-month" id="cal-month"></div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div class="cal-day-events" id="cal-day-events"></div>
-  </div>
-
+<div id="ios-banner">
+  <span id="ios-banner-text">Install: tap <strong>Share</strong> then <strong>Add to Home Screen</strong></span>
+  <button id="ios-banner-close" aria-label="Dismiss">×</button>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<div class="ios-hint hidden" id="ios-hint">
-  <div class="ios-hint-top">
-    <h3>📲 Add to Home Screen</h3>
-    <button class="close-ios" onclick="document.getElementById('ios-hint').classList.add('hidden')">×</button>
+<div id="header">
+  <div id="header-top">
+    <div id="hdate"></div>
+    <div id="stats">
+      <div class="chip">Today <span id="stat-today">0</span></div>
+      <div class="chip">Done <span id="stat-done">0</span></div>
+      <div class="chip">Total <span id="stat-total">0</span></div>
+    </div>
   </div>
-  <p>In Safari, tap the <strong>Share button (⬆)</strong> at the bottom, then tap <strong>"Add to Home Screen"</strong>.</p>
+  <div id="sync-bar">
+    <div id="sync-dot"></div>
+    <span id="sync-label">idle</span>
+  </div>
+  <div id="tabs">
+    <button class="tab active" data-tab="all">All</button>
+    <button class="tab" data-tab="today">Today</button>
+    <button class="tab" data-tab="upcoming">Upcoming</button>
+    <button class="tab" data-tab="done">Done</button>
+    <button class="tab" data-tab="calendar">Calendar</button>
+  </div>
 </div>
 
-<div class="install-banner hidden" id="install-banner">
-  <div class="install-text"><strong>Install app</strong>Works offline on this device</div>
-  <button class="install-btn" id="install-btn">Install</button>
-  <button class="dismiss-btn" onclick="document.getElementById('install-banner').classList.add('hidden')">×</button>
+<div id="form-section">
+  <div id="form-row">
+    <input id="title-input" type="text" placeholder="Add event…" autocomplete="off"/>
+    <button id="add-btn">Add</button>
+  </div>
+  <div id="form-meta">
+    <button id="dt-toggle">+ date/time</button>
+    <input id="dt-input" type="datetime-local"/>
+    <select id="cat-select" class="meta-select">
+      <option value="Work">Work</option>
+      <option value="Personal">Personal</option>
+      <option value="Health">Health</option>
+      <option value="Other" selected>Other</option>
+    </select>
+    <select id="pri-select" class="meta-select">
+      <option value="Normal" selected>Normal</option>
+      <option value="Urgent">Urgent</option>
+    </select>
+  </div>
 </div>
+
+<div id="list-section"></div>
+<div id="cal-section">
+  <div id="cal-nav">
+    <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+    <div id="cal-label"></div>
+    <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+  </div>
+  <div id="cal-grid"></div>
+  <div id="cal-day-events"></div>
+</div>
+
+<button id="install-btn">Install App</button>
+<div id="toast-container"></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyb8USqH5nvZm8mnXYzH8ZVQXiaE-jgNh4UBC22pi2dNsoqmeqOKdh0jTPa7M8RXhYDMA/exec';
 const SECRET = 'mango-jack-banana';
 const CACHE_KEY = 'sched_cache_v1';
 
-let items = [], activeTab = 'all', deferredPrompt = null;
-let dtEnabled = true;
+let items = [];
+let activeTab = 'all';
 let calYear, calMonth, calSelected = null;
+let deferredInstall = null;
 
-// ── Init cal to current month ─────────────────────────────────────────────────
-const _now = new Date();
-calYear = _now.getFullYear();
-calMonth = _now.getMonth();
+// ── helpers ──────────────────────────────────────────────────────────────────
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const isDone = v => v === true || v === 'TRUE';
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
-// ── Sync ──────────────────────────────────────────────────────────────────────
-function setSync(state, msg) {
-  document.getElementById('sync-dot').className = 'sync-dot ' + state;
-  document.getElementById('sync-label').textContent = msg;
+function syncStatus(state, label) {
+  const bar = document.getElementById('sync-bar');
+  bar.className = state;
+  document.getElementById('sync-label').textContent = label;
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, isErr) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show' + (isErr ? ' err' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = 'toast', 3000);
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'error' ? ' err' : type === 'ok' ? ' ok' : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function saveCache() {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch {}
+}
+
+function loadCache() {
+  try {
+    const d = localStorage.getItem(CACHE_KEY);
+    if (d) items = JSON.parse(d);
+  } catch {}
 }
 
 // ── API ───────────────────────────────────────────────────────────────────────
-async function apiPost(body) {
-  const r = await fetch(API, { method: 'POST', body: JSON.stringify({ ...body, key: SECRET }) });
-  return r.json();
-}
-
-async function loadItems() {
-  setSync('syncing', 'Syncing…');
+async function fetchItems() {
+  syncStatus('syncing', 'syncing…');
   try {
-    const r = await fetch(API + '?key=' + SECRET);
-    items = await r.json();
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
-    setSync('ok', 'Synced · ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));
+    const res = await fetch(API + '?key=' + SECRET);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    items = Array.isArray(data) ? data : (data.items || []);
+    saveCache();
+    syncStatus('ok', 'synced');
     render();
-  } catch(e) {
-    try {
-      const c = localStorage.getItem(CACHE_KEY);
-      if (c) { items = JSON.parse(c); render(); }
-    } catch(e2) {}
-    setSync('error', 'Offline — cached data');
-    toast('Cannot reach server. Showing cached data.', true);
+  } catch (e) {
+    syncStatus('error', 'offline');
+    if (!items.length) loadCache();
+    render();
   }
 }
 
-async function addItem() {
-  const title = document.getElementById('inp-title').value.trim();
-  if (!title) { document.getElementById('inp-title').focus(); return; }
-  const item = {
-    id: Date.now(), title,
-    dt: dtEnabled ? document.getElementById('inp-dt').value : '',
-    cat: document.getElementById('inp-cat').value,
-    pri: document.getElementById('inp-pri').value,
-    done: false, created: new Date().toISOString()
-  };
-  items.unshift(item); render();
-  document.getElementById('inp-title').value = '';
-  document.getElementById('inp-pri').value = 'normal';
-  if (dtEnabled) setDefaultDt();
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true; setSync('syncing', 'Saving…');
+async function apiPost(body) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, key: SECRET })
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+// ── CRUD with optimistic updates ──────────────────────────────────────────────
+async function addItem(item) {
+  items.unshift(item);
+  saveCache();
+  render();
+  toast('Event added', 'ok');
+  syncStatus('syncing', 'saving…');
   try {
     await apiPost({ action: 'add', item });
-    setSync('ok', 'Saved'); toast('Event added ✓');
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
-  } catch(e) {
-    items = items.filter(x => x.id !== item.id); render();
-    setSync('error', 'Save failed'); toast('Failed to save — check connection', true);
-  } finally { btn.disabled = false; }
-}
-
-async function toggleDone(id) {
-  const it = items.find(x => String(x.id) === String(id));
-  if (!it) return;
-  it.done = !it.done; render();
-  setSync('syncing', 'Saving…');
-  try {
-    await apiPost({ action: 'toggle', item: { id, done: it.done } });
-    setSync('ok', 'Saved');
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
-  } catch(e) {
-    it.done = !it.done; render();
-    setSync('error', 'Update failed'); toast('Failed to update', true);
+    syncStatus('ok', 'synced');
+  } catch {
+    items = items.filter(i => i.id !== item.id);
+    saveCache();
+    render();
+    syncStatus('error', 'save failed');
+    toast('Failed to save — removed', 'error');
   }
 }
 
-async function del(id) {
-  if (!confirm('Delete this event?')) return;
-  const backup = items.slice();
-  items = items.filter(x => String(x.id) !== String(id)); render();
-  setSync('syncing', 'Deleting…');
+async function toggleItem(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const prev = items[idx].done;
+  items[idx].done = !isDone(items[idx].done);
+  saveCache();
+  render();
+  syncStatus('syncing', 'saving…');
+  try {
+    await apiPost({ action: 'toggle', item: { id, done: items[idx].done } });
+    syncStatus('ok', 'synced');
+  } catch {
+    items[idx].done = prev;
+    saveCache();
+    render();
+    syncStatus('error', 'sync failed');
+    toast('Sync failed', 'error');
+  }
+}
+
+async function deleteItem(id) {
+  const backup = [...items];
+  items = items.filter(i => i.id !== id);
+  saveCache();
+  render();
+  toast('Deleted', 'ok');
+  syncStatus('syncing', 'deleting…');
   try {
     await apiPost({ action: 'delete', item: { id } });
-    setSync('ok', 'Deleted'); toast('Event deleted');
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(items)); } catch(e) {}
-  } catch(e) {
-    items = backup; render();
-    setSync('error', 'Delete failed'); toast('Failed to delete', true);
+    syncStatus('ok', 'synced');
+  } catch {
+    items = backup;
+    saveCache();
+    render();
+    syncStatus('error', 'delete failed');
+    toast('Delete failed — restored', 'error');
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const DOWS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const MFULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-function isDone(it) { return it.done === true || it.done === 'TRUE'; }
-function isToday(iso) { return iso && new Date(iso).toDateString() === new Date().toDateString(); }
-function isUpcoming(iso) { return iso && new Date(iso) > new Date(); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function fmtDate(iso) {
-  if (!iso) return null;
-  const d = new Date(iso), now = new Date();
-  const tom = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1).toDateString();
-  const t = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  const pre = d.toDateString()===now.toDateString() ? 'Today' : d.toDateString()===tom ? 'Tomorrow' : `${DAYS[d.getDay()]}, ${MONS[d.getMonth()]} ${d.getDate()}`;
-  return `${pre} · ${t}`;
-}
-function timeSt(iso) {
-  if (!iso) return '';
-  const diff = new Date(iso) - Date.now();
-  if (diff < 0 && diff > -86400000) return 'overdue';
-  if (diff >= 0 && diff < 3600000) return 'soon';
-  return '';
-}
-
-// ── Render list ───────────────────────────────────────────────────────────────
-function render() {
+// ── render helpers ────────────────────────────────────────────────────────────
+function dtTag(dt) {
+  if (!dt) return `<span class="tag nodate">no date</span>`;
+  const d = new Date(dt);
   const now = new Date();
-  document.getElementById('hdr-date').textContent = `${DAYS[now.getDay()]}, ${MONS[now.getMonth()]} ${now.getDate()}`;
-  document.getElementById('s-today').textContent = items.filter(x => isToday(x.dt)).length;
-  document.getElementById('s-done').textContent = items.filter(isDone).length;
-  document.getElementById('s-total').textContent = items.length;
+  const diff = d - now;
+  let cls = 'ok';
+  if (diff < 0) cls = 'overdue';
+  else if (diff < 86400000) cls = 'soon';
+  const label = d.toLocaleDateString('en-SG', { day:'2-digit', month:'short' })
+    + ' ' + d.toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit', hour12:false });
+  return `<span class="tag dt ${cls}">${label}</span>`;
+}
 
+function buildItem(item, inCal = false) {
+  const done = isDone(item.done);
+  const urgent = item.pri === 'Urgent';
+  const div = document.createElement('div');
+  div.className = `item${urgent ? ' urgent' : ''}${done ? ' done-item' : ''}`;
+  div.innerHTML = `
+    <div class="item-check${done ? ' checked' : ''}" data-id="${item.id}" role="button" aria-label="Toggle done"></div>
+    <div class="item-body">
+      <div class="item-title">${escHtml(item.title)}</div>
+      <div class="item-tags">
+        ${dtTag(item.dt)}
+        <span class="tag cat">${escHtml(item.cat || 'Other')}</span>
+        ${urgent ? '<span class="tag urgent-tag">Urgent</span>' : ''}
+      </div>
+    </div>
+    <button class="item-del" data-id="${item.id}" aria-label="Delete">×</button>`;
+  div.querySelector('.item-check').addEventListener('click', () => toggleItem(item.id));
+  div.querySelector('.item-del').addEventListener('click', () => deleteItem(item.id));
+  return div;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function filteredItems() {
+  const now = new Date();
+  const tod = todayStr();
+  switch (activeTab) {
+    case 'today':
+      return items.filter(i => i.dt && i.dt.slice(0,10) === tod && !isDone(i.done));
+    case 'upcoming':
+      return items.filter(i => i.dt && i.dt.slice(0,10) > tod && !isDone(i.done));
+    case 'done':
+      return items.filter(i => isDone(i.done));
+    default:
+      return [...items];
+  }
+}
+
+function render() {
+  updateStats();
   if (activeTab === 'calendar') { renderCalendar(); return; }
-
-  document.getElementById('list').style.display = '';
-  document.getElementById('calendar').classList.remove('active');
-
-  let vis = items.slice();
-  if (activeTab === 'today') vis = vis.filter(x => isToday(x.dt));
-  else if (activeTab === 'upcoming') vis = vis.filter(x => !isDone(x) && isUpcoming(x.dt));
-  else if (activeTab === 'done') vis = vis.filter(isDone);
-
-  vis.sort((a,b) => {
-    const ad = isDone(a), bd = isDone(b);
-    if (ad !== bd) return ad ? 1 : -1;
-    if (!a.dt && !b.dt) return new Date(b.created||0)-new Date(a.created||0);
-    if (!a.dt) return 1; if (!b.dt) return -1;
-    return new Date(a.dt)-new Date(b.dt);
-  });
-
-  const list = document.getElementById('list');
-  if (!vis.length) {
-    const m = {all:'No events yet — add one above',today:'Nothing scheduled today',upcoming:'Nothing upcoming',done:'Nothing completed yet'};
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>${m[activeTab]}</p></div>`;
+  const sec = document.getElementById('list-section');
+  sec.innerHTML = '';
+  const list = filteredItems();
+  if (!list.length) {
+    sec.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No events here</div>';
     return;
   }
-
-  let html='', lastDay=null;
-  vis.forEach(it => {
-    const done = isDone(it);
-    const dayKey = it.dt ? new Date(it.dt).toDateString() : '__nodate__';
-    if (dayKey !== lastDay && activeTab !== 'today') {
-      lastDay = dayKey;
-      const label = it.dt ? (isToday(it.dt)?'Today':(fmtDate(it.dt)||'').split(' · ')[0]) : 'No date set';
-      html += `<div class="day-sep">${label}</div>`;
-    }
-    const ts = timeSt(it.dt), tl = fmtDate(it.dt);
-    html += `
-      <div class="item${done?' done':''}${it.pri==='urgent'?' urgent':''}">
-        <div class="check${done?' done':''}" onclick="toggleDone('${it.id}')" role="checkbox" aria-checked="${done}">
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <div class="item-content">
-          <div class="item-title">${esc(it.title)}</div>
-          <div class="item-meta">
-            ${tl ? `<span class="item-time ${ts}">${tl}</span>` : `<span class="no-date-tag">no date</span>`}
-            <span class="badge badge-${it.cat||'other'}">${it.cat||'other'}</span>
-            ${it.pri==='urgent'?'<span class="badge badge-urgent">urgent</span>':''}
-          </div>
-        </div>
-        <button class="del-btn" onclick="del('${it.id}')" aria-label="Delete">×</button>
-      </div>`;
+  // group by date
+  const groups = {};
+  const nodate = [];
+  list.forEach(item => {
+    if (!item.dt) { nodate.push(item); return; }
+    const d = item.dt.slice(0, 10);
+    (groups[d] = groups[d] || []).push(item);
   });
-  list.innerHTML = html;
+  const sortedDates = Object.keys(groups).sort();
+  sortedDates.forEach(date => {
+    const sep = document.createElement('div');
+    sep.className = 'day-sep';
+    const d = new Date(date + 'T00:00');
+    sep.textContent = d.toLocaleDateString('en-SG', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+    sec.appendChild(sep);
+    groups[date].forEach(item => sec.appendChild(buildItem(item)));
+  });
+  if (nodate.length) {
+    const sep = document.createElement('div');
+    sep.className = 'day-sep';
+    sep.textContent = 'No date';
+    sec.appendChild(sep);
+    nodate.forEach(item => sec.appendChild(buildItem(item)));
+  }
 }
 
-// ── Calendar ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  const tod = todayStr();
+  document.getElementById('stat-today').textContent = items.filter(i => i.dt && i.dt.slice(0,10) === tod && !isDone(i.done)).length;
+  document.getElementById('stat-done').textContent = items.filter(i => isDone(i.done)).length;
+  document.getElementById('stat-total').textContent = items.length;
+}
+
+// ── calendar ──────────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
 function renderCalendar() {
-  document.getElementById('list').style.display = 'none';
-  document.getElementById('calendar').classList.add('active');
-
-  const MONS_FULL = MFULL;
-  document.getElementById('cal-month').textContent = `${MONS_FULL[calMonth]} ${calYear}`;
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
-  const today = new Date();
-
-  // build event map: dateString -> items[]
-  const evMap = {};
-  items.forEach(it => {
-    if (!it.dt) return;
-    const d = new Date(it.dt);
-    if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
-      const k = d.getDate();
-      if (!evMap[k]) evMap[k] = [];
-      evMap[k].push(it);
-    }
+  const grid = document.getElementById('cal-grid');
+  document.getElementById('cal-label').textContent = `${MONTHS[calMonth]} ${calYear}`;
+  grid.innerHTML = '';
+  DOWS.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
   });
-
-  let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
-
-  // prev month padding
-  for (let i = firstDay-1; i >= 0; i--) {
-    html += `<div class="cal-day other-month">${daysInPrev-i}</div>`;
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todStr = todayStr();
+  for (let i = 0; i < first; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty-day'; grid.appendChild(el);
   }
-
   for (let d = 1; d <= daysInMonth; d++) {
-    const isT = today.getDate()===d && today.getMonth()===calMonth && today.getFullYear()===calYear;
-    const isSel = calSelected === d;
-    const evs = evMap[d] || [];
-    const hasEv = evs.length > 0;
-    const dots = evs.slice(0,5).map(it => `<div class="cal-dot${isDone(it)?' done-dot':''}"></div>`).join('');
-    html += `<div class="cal-day${isT?' today':''}${isSel?' selected':''}${hasEv?' has-event':''}" onclick="calSelect(${d})">
-      <span>${d}</span>
-      ${hasEv ? `<div class="cal-dots">${dots}</div>` : ''}
-    </div>`;
+    const dStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayItems = items.filter(i => i.dt && i.dt.slice(0,10) === dStr);
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (dStr === todStr ? ' today' : '') + (calSelected === dStr ? ' selected' : '');
+    el.innerHTML = `<div class="cal-day-num">${d}</div>`;
+    if (dayItems.length) {
+      const dots = document.createElement('div'); dots.className = 'cal-dots';
+      const pending = dayItems.filter(i => !isDone(i.done)).length;
+      const done = dayItems.filter(i => isDone(i.done)).length;
+      for (let p = 0; p < Math.min(pending, 3); p++) { const dot = document.createElement('div'); dot.className = 'cal-dot pending'; dots.appendChild(dot); }
+      for (let p = 0; p < Math.min(done, 2); p++) { const dot = document.createElement('div'); dot.className = 'cal-dot done'; dots.appendChild(dot); }
+      el.appendChild(dots);
+    }
+    el.addEventListener('click', () => { calSelected = dStr; renderCalendar(); renderCalDay(dStr); });
+    grid.appendChild(el);
   }
-
-  // next month padding
-  const totalCells = firstDay + daysInMonth;
-  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-  for (let i = 1; i <= remaining; i++) {
-    html += `<div class="cal-day other-month">${i}</div>`;
-  }
-
-  document.getElementById('cal-grid').innerHTML = html;
-  renderCalDayEvents();
+  if (calSelected) renderCalDay(calSelected);
 }
 
-function calSelect(d) {
-  calSelected = calSelected === d ? null : d;
-  renderCalendar();
-}
-
-function renderCalDayEvents() {
-  const container = document.getElementById('cal-day-events');
-  if (!calSelected) { container.innerHTML = ''; return; }
-
-  const dayItems = items.filter(it => {
-    if (!it.dt) return false;
-    const d = new Date(it.dt);
-    return d.getFullYear()===calYear && d.getMonth()===calMonth && d.getDate()===calSelected;
-  }).sort((a,b) => new Date(a.dt)-new Date(b.dt));
-
-  const date = new Date(calYear, calMonth, calSelected);
-  const label = date.toDateString()===new Date().toDateString() ? 'Today' : `${DAYS[date.getDay()]}, ${MONS[date.getMonth()]} ${calSelected}`;
-
+function renderCalDay(dStr) {
+  const sec = document.getElementById('cal-day-events');
+  const dayItems = items.filter(i => i.dt && i.dt.slice(0,10) === dStr);
+  const d = new Date(dStr + 'T00:00');
+  document.getElementById('cal-day-title').textContent = d.toLocaleDateString('en-SG', { weekday:'long', day:'2-digit', month:'long' });
+  sec.innerHTML = '';
+  sec.appendChild(Object.assign(document.createElement('div'), { id: 'cal-day-title', textContent: d.toLocaleDateString('en-SG', { weekday:'long', day:'2-digit', month:'long' }) }));
   if (!dayItems.length) {
-    container.innerHTML = `<div class="cal-day-header">${label}</div><div class="empty" style="padding:20px 0"><div class="empty-icon" style="font-size:28px">📭</div><p>No events this day</p></div>`;
+    sec.innerHTML += '<div class="empty" style="padding:20px 0">No events this day</div>';
     return;
   }
+  dayItems.forEach(item => sec.appendChild(buildItem(item, true)));
+}
 
-  let html = `<div class="cal-day-header">${label} · ${dayItems.length} event${dayItems.length>1?'s':''}</div>`;
-  dayItems.forEach(it => {
-    const done = isDone(it);
-    const time = it.dt ? new Date(it.dt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-    html += `
-      <div class="cal-event${done?' done':''}${it.pri==='urgent'?' urgent':''}">
-        <div class="check${done?' done':''}" onclick="toggleDone('${it.id}')" style="width:18px;height:18px;flex-shrink:0">
-          <svg width="9" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <div class="cal-event-title">${esc(it.title)}</div>
-        <div class="cal-event-time">${time}</div>
-        <button class="del-btn" onclick="del('${it.id}')" style="font-size:18px">×</button>
-      </div>`;
+// ── tabs & calendar nav ───────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = btn.dataset.tab;
+    const isCalendar = activeTab === 'calendar';
+    document.getElementById('list-section').style.display = isCalendar ? 'none' : '';
+    document.getElementById('cal-section').style.display = isCalendar ? 'block' : 'none';
+    render();
   });
-  container.innerHTML = html;
+});
+
+document.getElementById('cal-prev').addEventListener('click', () => {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } calSelected = null; renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } calSelected = null; renderCalendar();
+});
+
+// ── add form ──────────────────────────────────────────────────────────────────
+const dtToggle = document.getElementById('dt-toggle');
+const dtInput = document.getElementById('dt-input');
+dtToggle.addEventListener('click', () => {
+  const on = dtInput.classList.toggle('show');
+  dtToggle.classList.toggle('active', on);
+  dtToggle.textContent = on ? '− date/time' : '+ date/time';
+});
+
+function submitForm() {
+  const title = document.getElementById('title-input').value.trim();
+  if (!title) { toast('Enter an event title', 'error'); return; }
+  const dt = dtInput.classList.contains('show') ? dtInput.value || null : null;
+  const cat = document.getElementById('cat-select').value;
+  const pri = document.getElementById('pri-select').value;
+  const item = { id: uid(), title, dt, cat, pri, done: false, created: new Date().toISOString() };
+  document.getElementById('title-input').value = '';
+  dtInput.value = '';
+  addItem(item);
 }
 
-function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} calSelected=null; renderCalendar(); }
-function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} calSelected=null; renderCalendar(); }
+document.getElementById('add-btn').addEventListener('click', submitForm);
+document.getElementById('title-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitForm(); });
 
-// ── Date toggle ───────────────────────────────────────────────────────────────
-function toggleDt() {
-  dtEnabled = !dtEnabled;
-  const btn = document.getElementById('dt-toggle');
-  const inp = document.getElementById('inp-dt');
-  btn.classList.toggle('active', dtEnabled);
-  btn.innerHTML = `<span class="dot"></span> ${dtEnabled ? 'With date & time' : 'No date & time'}`;
-  inp.disabled = !dtEnabled;
-  inp.style.opacity = dtEnabled ? '1' : '0.3';
+// ── iOS banner ────────────────────────────────────────────────────────────────
+function isIos() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+function isStandalone() { return window.navigator.standalone === true; }
+
+if (isIos() && !isStandalone() && !sessionStorage.getItem('ios_banner_shown')) {
+  document.getElementById('ios-banner').style.display = 'flex';
+  sessionStorage.setItem('ios_banner_shown', '1');
 }
+document.getElementById('ios-banner-close').addEventListener('click', () => {
+  document.getElementById('ios-banner').style.display = 'none';
+});
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-function setTab(t, el) {
-  activeTab = t;
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  render();
-}
-
-function toggleForm() {
-  const btn = document.getElementById('toggle-btn'), body = document.getElementById('form-body');
-  const open = body.classList.toggle('open'); btn.classList.toggle('open', open);
-  if (open) setTimeout(() => document.getElementById('inp-title').focus(), 50);
-}
-
-function setDefaultDt() {
-  const n = new Date(); n.setMinutes(n.getMinutes()+30-(n.getMinutes()%30)); n.setSeconds(0,0);
-  document.getElementById('inp-dt').value = new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,16);
-}
-
-document.addEventListener('keydown', e => { if(e.key==='Enter'&&document.activeElement.id==='inp-title') addItem(); });
-document.addEventListener('visibilitychange', () => { if(!document.hidden) loadItems(); });
-
-// ── PWA ───────────────────────────────────────────────────────────────────────
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-if (!isStandalone && isIOS && !sessionStorage.getItem('ios_shown')) {
-  setTimeout(() => { document.getElementById('ios-hint').classList.remove('hidden'); sessionStorage.setItem('ios_shown','1'); }, 2500);
-}
+// ── Android/desktop install ───────────────────────────────────────────────────
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); deferredPrompt = e;
-  if (!isStandalone) document.getElementById('install-banner').classList.remove('hidden');
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('install-btn').style.display = 'block';
 });
 document.getElementById('install-btn').addEventListener('click', async () => {
-  if (!deferredPrompt) return; deferredPrompt.prompt();
-  const {outcome} = await deferredPrompt.userChoice;
-  if (outcome==='accepted') document.getElementById('install-banner').classList.add('hidden');
-  deferredPrompt = null;
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  const { outcome } = await deferredInstall.userChoice;
+  if (outcome === 'accepted') document.getElementById('install-btn').style.display = 'none';
+  deferredInstall = null;
 });
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+// ── visibility refresh ────────────────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => { if (!document.hidden) fetchItems(); });
+
+// ── header date ───────────────────────────────────────────────────────────────
+function setHeaderDate() {
+  document.getElementById('hdate').textContent = new Date().toLocaleDateString('en-SG', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
 }
 
-setDefaultDt();
-loadItems();
+// ── service worker ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ── init ──────────────────────────────────────────────────────────────────────
+(function init() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  setHeaderDate();
+  loadCache();
+  render();
+  fetchItems();
+})();
 </script>
 </body>
 </html>
